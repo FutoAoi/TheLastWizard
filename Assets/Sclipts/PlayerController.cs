@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
+    [Header("ステータス設定")]
     [SerializeField,Tooltip("最大体力")] float _maxHp;
     [SerializeField,Tooltip("最大マナ")] float _maxMp;
     [SerializeField,Tooltip("移動速度")] float _moveSpeed;
@@ -10,6 +11,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     [SerializeField] GameObject _mainCamera;
     [SerializeField] float _xSensitivity, _ySensitivity;
     [SerializeField] float _maxCameraAngle;
+
+    [Header("コンポーネント設定")]
+    [SerializeField] MagicShooter MagicShooter;
 
     private float _currentHp;
     private float _currentMp;
@@ -24,6 +28,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     //プロパティ
     public float HP => _currentHp;
     public float MoveSpeed => _moveSpeed;
+    public Quaternion PlayerRot => _playerRot;
 
     public void SetupCharactor()
     {
@@ -31,22 +36,33 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _playerRot = transform.localRotation;
         _currentHp = _maxHp;
         _currentMp = _maxMp;
+        MagicShooter.MagicUpdate();
     }
 
     public void UpdateCharactor()
     {
         Move();
         FPSCameraMove();
+        MagicShooter.SetMagic();
+        if (Input.GetMouseButton(0))
+        {
+            MagicShooter.MagicShoot();
+        }
     }
 
     public void Die()
     {
-        throw new System.NotImplementedException();
+        Debug.Log("死んだで");
     }
 
     public void Hit(float damage)
     {
-        throw new System.NotImplementedException();
+        _currentHp -= damage;
+        if( _currentHp < 0 )
+        {
+            Die();
+        }
+        Debug.Log($"{damage}受けた！！");
     }
 
     private void Move()

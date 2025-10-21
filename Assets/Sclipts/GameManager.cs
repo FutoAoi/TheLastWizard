@@ -10,8 +10,8 @@ public class GameManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         var charactors = FindObjectsByType<MonoBehaviour>(
-            FindObjectsInactive.Include,     // 非アクティブも含める
-            FindObjectsSortMode.None         // ソートなし（速い）
+            FindObjectsInactive.Include,     
+            FindObjectsSortMode.None         
         ).OfType<ICharactor>();
         foreach (var charactor in charactors)
         {

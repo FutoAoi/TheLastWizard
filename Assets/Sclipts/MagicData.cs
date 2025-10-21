@@ -1,44 +1,41 @@
 using UnityEngine;
 
-[ExecuteAlways]
-public class MagicData : MonoBehaviour
+[System.Serializable]
+public class MagicData
 {
-    [Header("マジックID")]
-    [SerializeField] private string _magicID;
+    [SerializeField] private string _magicID; // 魔法のID
+    [SerializeField] private MagicBehavior _magicPrefab; // 発射する魔法のPrefab
+    private int _attackPower; // 攻撃力
+    private int _range; // 射程
+    private int _cooldown; // クールダウン時間(秒)
+    private int _magicSpeed; // 詠唱速度
 
-    [Header("各パラメータ")]
-    [SerializeField] private int _attackPower;
-    [SerializeField] private int _range;
-    [SerializeField] private int _cooldown;
-    [SerializeField] private int _chantingSpeed;
+    [HideInInspector] public float _lastShootTime; // 最後に撃った時間
 
-    private void GenerateID()
+    public float LastShootTime => _lastShootTime;
+    public MagicBehavior MagicPrefab => _magicPrefab;
+    public string MagicID => _magicID;
+    public int AttackPower => _attackPower;
+    public int Range => _range;
+    public int Cooldown => _cooldown;
+    public int MagicSpeed => _magicSpeed;
+
+
+    //MagicGenerator との同期関数
+    public void GenerateIDFromParameters()
     {
-        _magicID = $"{_attackPower:D3}{_range:D3}{_cooldown:D3}{_chantingSpeed:D3}";
+        var parameters = new MagicGenerator.MagicParameters(_attackPower, _range, _cooldown, _magicSpeed);
+        _magicID = MagicGenerator.GetID(parameters);
     }
-
-    private void GenerateParameter(string id)
+    
+    //ID から値を復元
+    public void ApplyParametersFromID()
     {
-        string attackString = id.Substring(0, 3);
-        string rangeString = id.Substring(3, 3);
-        string cooldownString = id.Substring(6, 3);
-        string chantingSpeedString = id.Substring(9, 3);
-
-        _attackPower = int.Parse(attackString);
-        _range = int.Parse(rangeString);
-        _cooldown = int.Parse(cooldownString);
-        _chantingSpeed = int.Parse(chantingSpeedString);
-    }
-
-    private void OnValidate()
-    {
-        if(!string.IsNullOrEmpty(_magicID) && _magicID.Length == 12)
-        {
-            GenerateParameter(_magicID);
-        }
-        else
-        {
-            GenerateID();
-        }
+        var parameters = MagicGenerator.GetMagicParameters(_magicID);
+        _attackPower = parameters.attackPower;
+        _range = parameters.range;
+        _cooldown = parameters.cooldown;
+        _magicSpeed = parameters.magicSpeed;
+        _lastShootTime = -parameters.cooldown;
     }
 }
