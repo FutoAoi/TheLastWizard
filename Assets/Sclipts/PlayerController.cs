@@ -1,4 +1,5 @@
 using UnityEngine;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
@@ -17,8 +18,10 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 
     private float _currentHp;
     private float _currentMp;
-    private float _x, _y;
-    private Vector3 _move;
+    private float _x, _z;
+    private Vector3 _forward;
+    private Vector3 _right;
+    private Vector3 _moveDirection;
     private Rigidbody _rb;
 
     float _xRot, _yRot;
@@ -67,16 +70,25 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 
     private void Move()
     {
-        _x = Input.GetAxis("Horizontal");
-        _y = Input.GetAxis("Vertical");
+        _x = Input.GetAxis("Horizontal") * _moveSpeed;
+        _z = Input.GetAxis("Vertical") * _moveSpeed;
 
         if (Mathf.Abs(_x) < 0.1f) _x = 0f;
-        if (Mathf.Abs(_y) < 0.1f) _y = 0f;
+        if (Mathf.Abs(_z) < 0.1f) _z = 0f;
 
-        _move = transform.right * _x + transform.forward * _y;
-        _move.Normalize();
+        _forward = _mainCamera.transform.forward; 
+        _right = _mainCamera.transform.right;
 
-        _rb.MovePosition(_rb.position + _move * _moveSpeed * Time.deltaTime);
+        _forward.y = 0f;
+        _right.y = 0f;
+        _forward.Normalize();
+        _right.Normalize();
+
+        _moveDirection = (_forward * _z + _right * _x).normalized * _moveSpeed;
+
+        _moveDirection.y = _rb.linearVelocity.y;
+
+        _rb.linearVelocity = _moveDirection;
     }
 
     private void FPSCameraMove()

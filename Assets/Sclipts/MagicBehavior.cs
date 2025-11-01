@@ -3,34 +3,52 @@ using UnityEngine;
 public class MagicBehavior : MonoBehaviour
 {
     int _attackPower = 0;
-    int _range = 0;
 
     [SerializeField] float _speed;
     [SerializeField] float _destroyTimer;
+    [SerializeField] float _radius;
     Transform _tf;
     private void Start()
     {
         _tf = GetComponent<Transform>();
+        Destroy(gameObject, _destroyTimer);
     }
 
     private void Update()
     {
         _tf.Translate(Vector3.forward *  _speed * Time.deltaTime);
-        Destroy(gameObject, _range);
-    }
-    public void OnTriggerEnter(Collider other)
-    {
-        IDamageable target = other.GetComponent<IDamageable>();
-        if(target != null)
+
+        RaycastHit hit;
+
+        if(Physics.SphereCast(_tf.position, _radius, _tf.forward, out hit, _speed * Time.deltaTime))
         {
-            target.Hit(_attackPower);
+            GameObject hitTarget = hit.collider.gameObject;
+
+            IDamageable target = hitTarget.GetComponent<IDamageable>();
+            if(target != null)
+            {
+                target.Hit(_attackPower);
+            }
+            Destroy(gameObject);
         }
-        Destroy(this.gameObject);
     }
 
-    public void AddStatus(int power, int range)
+    public void AddStatus(int power, int range, int speed)
     {
         _attackPower = power;
-        _range = range;
+        _destroyTimer = range;
+        _speed = speed;
+    }
+    private void OnDrawGizmos()
+    {
+        if (_tf == null) _tf = transform;
+
+        Gizmos.color = Color.cyan;
+
+        // 現在位置の球を描画（当たり判定の目安）
+        Gizmos.DrawWireSphere(_tf.position, _radius);
+
+        // 前方向に進むスフィアキャストを描画
+        Gizmos.DrawRay(_tf.position, _tf.forward * _speed * Time.deltaTime);
     }
 }
