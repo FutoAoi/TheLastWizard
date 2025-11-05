@@ -1,4 +1,6 @@
+using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 
@@ -9,6 +11,7 @@ public class MagicShooter : MonoBehaviour
 
     [SerializeField] Transform _startShootingPosition;
     [SerializeField] GameObject _camera;
+    [SerializeField] TMP_Text _text;
 
     int _magicIndex = 0;
 
@@ -18,6 +21,7 @@ public class MagicShooter : MonoBehaviour
 
         if(Time.time - magic.LastShootTime < magic.Cooldown)
         {
+            StartCoroutine(MagicCooldownText());
             return;
         }
         MagicBehavior shootMagic = MagicObjectPool.Instance.GetMagic(_magicIndex);
@@ -43,5 +47,12 @@ public class MagicShooter : MonoBehaviour
         {
             _magics[i].ApplyParametersFromID();
         }
+    }
+
+    IEnumerator MagicCooldownText()
+    {
+        _text.text = "クールダウン中です";
+        yield return new WaitForSeconds(1);
+        _text.text = "";
     }
 }
