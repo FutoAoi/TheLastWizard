@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class MagicBehavior : MonoBehaviour
@@ -8,10 +9,18 @@ public class MagicBehavior : MonoBehaviour
     [SerializeField] float _destroyTimer;
     [SerializeField] float _radius;
     Transform _tf;
+
+    private Action _onDisable;
+    private float _elapsedTime;
     private void Start()
     {
         _tf = GetComponent<Transform>();
-        Destroy(gameObject, _destroyTimer);
+    }
+
+    public void Initialize(Action onDisable)
+    {
+        _onDisable = onDisable;
+        _elapsedTime = 0;
     }
 
     private void Update()
@@ -29,7 +38,16 @@ public class MagicBehavior : MonoBehaviour
             {
                 target.Hit(_attackPower);
             }
-            Destroy(gameObject);
+            _onDisable?.Invoke();
+            gameObject.SetActive(false);
+        }
+
+        _elapsedTime += Time.deltaTime;
+
+        if (_elapsedTime >= _destroyTimer)
+        {
+            _onDisable?.Invoke();
+            gameObject.SetActive(false);
         }
     }
 
@@ -39,6 +57,7 @@ public class MagicBehavior : MonoBehaviour
         _destroyTimer = range;
         _speed = speed;
     }
+
     private void OnDrawGizmos()
     {
         if (_tf == null) _tf = transform;

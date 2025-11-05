@@ -20,8 +20,13 @@ public class MagicShooter : MonoBehaviour
         {
             return;
         }
-        MagicBehavior shootmagic = Instantiate(magic.MagicPrefab, _startShootingPosition.position, _camera.transform.rotation);
-        shootmagic.AddStatus(magic.AttackPower, magic.Range, magic.MagicSpeed);
+        MagicBehavior shootMagic = MagicObjectPool.Instance.GetMagic(_magicIndex);
+
+        shootMagic.transform.position = _startShootingPosition.position;
+        shootMagic.transform.rotation = _camera.transform.rotation;
+
+        shootMagic.AddStatus(magic.AttackPower, magic.Range, magic.MagicSpeed);
+
         magic._lastShootTime = Time.time;
     }
 

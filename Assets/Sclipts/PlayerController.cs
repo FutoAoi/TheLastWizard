@@ -1,20 +1,23 @@
+using System.Collections;
 using UnityEngine;
 using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
     [Header("ステータス設定")]
-    [SerializeField,Tooltip("最大体力")] float _maxHp;
-    [SerializeField,Tooltip("最大マナ")] float _maxMp;
-    [SerializeField,Tooltip("移動速度")] float _moveSpeed;
+    [SerializeField,Tooltip("最大体力")] private float _maxHp;
+    [SerializeField,Tooltip("最大マナ")] private float _maxMp;
+    [SerializeField,Tooltip("移動速度")] private float _moveSpeed;
+    [SerializeField, Tooltip("ジャンプの強さ")] private float _jumpForce;
+    [SerializeField, Tooltip("受ける最大の高さ")] private float _maxHeight;
 
     [Header("カメラ設定")]
-    [SerializeField] GameObject _mainCamera;
-    [SerializeField] float _xSensitivity, _ySensitivity;
-    [SerializeField] float _maxCameraAngle;
+    [SerializeField,Tooltip("FPSカメラ")] private GameObject _mainCamera;
+    [SerializeField,Tooltip("カメラ感度")] public float _xSensitivity, _ySensitivity;
+    [SerializeField,Tooltip("最大のカメラ傾き")] private float _maxCameraAngle;
 
     [Header("コンポーネント設定")]
-    [SerializeField] MagicShooter MagicShooter;
+    [SerializeField,Tooltip("マジックシューター")] MagicShooter MagicShooter;
 
     private float _currentHp;
     private float _currentMp;
@@ -23,41 +26,63 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     private Vector3 _right;
     private Vector3 _moveDirection;
     private Rigidbody _rb;
+    private Animator _animator;
+    private Transform _tf;
+    private float _startY;
 
-    float _xRot, _yRot;
-    float _clampYRot;
-    Quaternion _playerRot;
+    private float _xRot, _yRot;
+    private float _clampYRot;
+    private Quaternion _playerRot;
 
-    //プロパティ
+    /// <summary>
+    /// プロパティ
+    /// </summary>
     public float HP => _currentHp;
     public float MoveSpeed => _moveSpeed;
     public Quaternion PlayerRot => _playerRot;
 
+    /// <summary>
+    /// 初期セットアップ
+    /// </summary>
     public void SetupCharactor()
     {
         _rb = GetComponent<Rigidbody>();
+        _animator = GetComponent<Animator>();
+        _tf = GetComponent<Transform>();
+        _startY = _tf.position.y;
         _playerRot = transform.localRotation;
         _currentHp = _maxHp;
         _currentMp = _maxMp;
         MagicShooter.MagicUpdate();
     }
 
+    /// <summary>
+    /// 常時処理
+    /// </summary>
     public void UpdateCharactor()
     {
         Move();
         FPSCameraMove();
         MagicShooter.SetMagic();
-        if (Input.GetMouseButton(0))
+        Jump();
+        if (Input.GetMouseButtonDown(0))
         {
-            MagicShooter.MagicShoot();
+            _animator.Play("Attack", 0);
         }
     }
 
+    /// <summary>
+    /// 死亡処理
+    /// </summary>
     public void Die()
     {
         Debug.Log("死んだで");
     }
 
+    /// <summary>
+    /// ヒット処理
+    /// </summary>
+    /// <param name="damage"></param>
     public void Hit(float damage)
     {
         _currentHp -= damage;
@@ -68,6 +93,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         Debug.Log($"{damage}受けた！！");
     }
 
+    /// <summary>
+    /// 行動メソット
+    /// </summary>
     private void Move()
     {
         _x = Input.GetAxis("Horizontal") * _moveSpeed;
@@ -91,6 +119,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _rb.linearVelocity = _moveDirection;
     }
 
+    /// <summary>
+    /// カメラメソット
+    /// </summary>
     private void FPSCameraMove()
     {
         _xRot = Input.GetAxis("Mouse X") * _xSensitivity;
@@ -103,5 +134,21 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 
         _mainCamera.transform.localRotation = Quaternion.Euler(_clampYRot, 0f, 0f);
         transform.localRotation = _playerRot;
+    }
+
+    public void Jump()
+    {
+        float currentHeight = _tf.position.y;
+        if(Input.GetKey(KeyCode.Space) && currentHeight < _startY + _maxHeight )
+        {
+            _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Acceleration);
+        }
+        else if(currentHeight >= _startY + _maxHeight)
+        {
+            if(_rb.linearVelocity.y > 0f)
+            {
+                _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z);
+            }
+        }
     }
 }

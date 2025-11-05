@@ -2,11 +2,14 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [SerializeField] GameObject _enemy;
-    [SerializeField] Transform[] _spawnPoint;
-    [SerializeField] float _spawnTime;
+    [Header("スポーンさせる敵")]
+    [SerializeField] private GameObject _enemy;
+    [Header("スポーンさせる場所")]
+    [SerializeField] private Transform[] _spawnPoint;
+    [Header("スポーン間隔")]
+    [SerializeField] private float _spawnTime;
 
-    float _timer;
+   　private float _timer;
 
     private void Update()
     {

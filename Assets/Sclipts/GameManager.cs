@@ -9,7 +9,6 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        // ゲーム開始前にインスタンスをセット
         instance = this;
     }
 

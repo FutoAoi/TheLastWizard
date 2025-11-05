@@ -1,16 +1,24 @@
-using Unity.VisualScripting;
+using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
 {
-    [SerializeField] private float _hp;
-    [SerializeField] private NavMeshAgent _agent;
-    [SerializeField] private float _attckRange;
-    [SerializeField] private float _chaseRange;
+    [Header("エネミーの基本ステータス")]
+    [SerializeField,Tooltip("エネミーのHp")] private float _hp;
+    [SerializeField,Tooltip("攻撃可能範囲")] private float _attckRange;
+    [SerializeField,Tooltip("チェイス開始範囲")] private float _chaseRange;
+    [SerializeField,Tooltip("攻撃判定の表示時間")] private float _showCollisionObjectTime;
 
+    [Header("エネミーのコンポーネント設定")]
+    [SerializeField,Tooltip("ナビメッシュ")] private NavMeshAgent _agent;
+    [SerializeField,Tooltip("当たり判定のコライダー")] private GameObject _hitCheckerObject;
+
+    private Animator _animator;
     private GameObject _defaultTarget;
     private GameObject _currentTarget;
+    private bool _isWalking = false;
     public float HP => _hp;
 
     void Awake()
@@ -19,6 +27,7 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
         {
             GameManager.instance.AddIcharactorList(this);
         }
+        _animator = GetComponent<Animator>();
         _defaultTarget = GameObject.Find("coa");
         _currentTarget = _defaultTarget;
     }
@@ -54,14 +63,18 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
 
         if(distance < _attckRange)
         {
-            _agent.isStopped = true;
+            _isWalking = false;
+            _animator.SetTrigger("Attack");
         }
         else
         {
-            _agent.isStopped = false;
+            _isWalking = true;
             _agent.SetDestination(_currentTarget.transform.position);
         }
+        _agent.isStopped = !_isWalking;
+        _animator.SetBool("isWalk", _isWalking);
     }
+    
     public void Die()
     {
         Destroy(gameObject);
@@ -77,4 +90,12 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
         }
     }
 
+    public async UniTask Attack()
+    {
+        _hitCheckerObject.SetActive(true);
+
+        await UniTask.Delay(TimeSpan.FromSeconds(_showCollisionObjectTime), cancellationToken: gameObject.GetCancellationTokenOnDestroy());
+
+        _hitCheckerObject.SetActive(false);
+    }
 }
