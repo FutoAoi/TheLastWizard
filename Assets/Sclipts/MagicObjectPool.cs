@@ -5,9 +5,6 @@ public class MagicObjectPool : MonoBehaviour
 {
     [SerializeField] public MagicBehavior[] _magicPrefabs;
 
-    [SerializeField] private Transform _position;
-    [SerializeField] private Transform _camera;
-
     private ObjectPool<MagicBehavior>[] _magicPools;
 
     private static MagicObjectPool _instance;
@@ -86,5 +83,10 @@ public class MagicObjectPool : MonoBehaviour
     private void OnDestroyObject(MagicBehavior magicObject)
     {
         Destroy(magicObject.gameObject);
+    }
+
+    public void SetMagicPrefab()
+    {
+
     }
 }
