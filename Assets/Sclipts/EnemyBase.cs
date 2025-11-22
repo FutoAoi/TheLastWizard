@@ -18,6 +18,7 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     private Animator _animator;
     private GameObject _defaultTarget;
     private GameObject _currentTarget;
+    private GameObject _player;
     private bool _isWalking = false;
     private StateMachine<EnemyBase> _stateMachine;
 
@@ -36,6 +37,7 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
         _animator = GetComponent<Animator>();
         _defaultTarget = GameObject.Find("coa");
         _currentTarget = _defaultTarget;
+        _player = GameObject.FindWithTag("Player");
     }
 
     public void SetupCharactor()
@@ -47,17 +49,16 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     {
         if (_agent == null || !_agent.isActiveAndEnabled) return;
 
-        GameObject player = GameObject.FindWithTag("Player");
 
-        if (player != null)
+        if (_player != null)
         {
-            float playerDistance = Vector3.Distance(transform.position, player.transform.position);
+            float playerDistance = Vector3.Distance(transform.position, _player.transform.position);
 
             float defaultDistance = _defaultTarget != null ? Vector3.Distance(transform.position, _defaultTarget.transform.position) : Mathf.Infinity;
 
             if (playerDistance < _chaseRange)
             {
-                _currentTarget = player;
+                _currentTarget = _player;
             }
             else
             {

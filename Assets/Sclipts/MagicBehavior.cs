@@ -8,6 +8,7 @@ public class MagicBehavior : MonoBehaviour
     [SerializeField] float _speed;
     [SerializeField] float _destroyTimer;
     [SerializeField] float _radius;
+    [SerializeField] GameObject _hitParticle;
     Transform _tf;
 
     private Action _onDisable;
@@ -36,6 +37,8 @@ public class MagicBehavior : MonoBehaviour
             IDamageable target = hitTarget.GetComponent<IDamageable>();
             if(target != null)
             {
+                EffectBehavior effect = EffectObjectPool.Instance.GetEffect(EffectType.Hit);
+                effect.transform.position = _tf.position;
                 target.Hit(_attackPower);
             }
             _onDisable?.Invoke();
@@ -67,7 +70,5 @@ public class MagicBehavior : MonoBehaviour
         // 現在位置の球を描画（当たり判定の目安）
         Gizmos.DrawWireSphere(_tf.position, _radius);
 
-        // 前方向に進むスフィアキャストを描画
-        Gizmos.DrawRay(_tf.position, _tf.forward * _speed * Time.deltaTime);
     }
 }
