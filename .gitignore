@@ -12,6 +12,7 @@
 /[Uu]ser[Ss]ettings/
 /[Aa]ssets/3DAsset/
 /[Aa]ssets/Texts/
+/[Aa]ssets/[Pp]lugins/
 *.log
 
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
