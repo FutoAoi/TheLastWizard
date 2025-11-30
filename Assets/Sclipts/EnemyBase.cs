@@ -20,6 +20,7 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     private GameObject _currentTarget;
     private GameObject _player;
     private bool _isWalking = false;
+    private Action _onDisable;
     private StateMachine<EnemyBase> _stateMachine;
 
     private readonly IState<EnemyBase> IdleState = new Idle();
@@ -38,6 +39,11 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
         _defaultTarget = GameObject.Find("coa");
         _currentTarget = _defaultTarget;
         _player = GameObject.FindWithTag("Player");
+    }
+
+    public void Initialized(Action onDisable)
+    {
+        _onDisable = onDisable;
     }
 
     public void SetupCharactor()
@@ -84,7 +90,7 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     
     public void Die()
     {
-        Destroy(gameObject);
+        _onDisable?.Invoke();
     }
 
     public void Hit(float damage)

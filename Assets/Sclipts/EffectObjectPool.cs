@@ -8,6 +8,7 @@ public enum EffectType
     None,
     Hit
 }
+
 public class EffectObjectPool : MonoBehaviour
 {
     [Serializable]
@@ -17,7 +18,7 @@ public class EffectObjectPool : MonoBehaviour
         public EffectBehavior EffectPrefab;
     }
 
-    [SerializeField] public EffectData[] _effectPrefabs;
+    [SerializeField] private EffectData[] _effectPrefabs;
 
     private Dictionary<EffectType, ObjectPool<EffectBehavior>> _pools = new();
 
@@ -36,7 +37,7 @@ public class EffectObjectPool : MonoBehaviour
 
     private void Start()
     {
-        foreach(var data in _effectPrefabs)
+        foreach(EffectData data in _effectPrefabs)
         {
             EffectType type = data.EffectType;
 

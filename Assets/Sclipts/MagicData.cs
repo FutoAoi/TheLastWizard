@@ -8,7 +8,7 @@ public class MagicData
     private int _attackPower; // 攻撃力
     private int _range; // 射程
     private int _cooldown; // クールダウン時間(秒)
-    private int _magicSpeed; // 詠唱速度
+    private int _magicSpeed; // 速度
 
     [HideInInspector] public float _lastShootTime; // 最後に撃った時間
 

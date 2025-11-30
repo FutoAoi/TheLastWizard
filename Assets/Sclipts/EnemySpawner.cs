@@ -2,8 +2,6 @@ using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("スポーンさせる敵")]
-    [SerializeField] private GameObject _enemy;
     [Header("スポーンさせる場所")]
     [SerializeField] private Transform[] _spawnPoint;
     [Header("スポーン間隔")]
@@ -17,7 +15,8 @@ public class EnemySpawner : MonoBehaviour
         if(_timer > _spawnTime)
         {
             int a = Random.Range(0, _spawnPoint.Length);
-            Instantiate(_enemy, _spawnPoint[a].position, Quaternion.identity);
+            EnemyBase enemy = EnemyObjectPool.Instance.GetEnemy(EnemyType.Nomal);
+            enemy.transform.position = _spawnPoint[a].position;
             _timer = 0;
         }
     }

@@ -3,7 +3,7 @@ using UnityEngine.Pool;
 
 public class MagicObjectPool : MonoBehaviour
 {
-    [SerializeField] public MagicBehavior[] _magicPrefabs;
+    [SerializeField] private MagicBehavior[] _magicPrefabs;
 
     private ObjectPool<MagicBehavior>[] _magicPools;
 

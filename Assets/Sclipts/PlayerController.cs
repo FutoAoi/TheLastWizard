@@ -6,7 +6,8 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
     [Header("ステータス設定")]
     [SerializeField,Tooltip("最大体力")] private float _maxHp;
-    [SerializeField,Tooltip("最大マナ")] private float _maxMp;
+    [SerializeField,Tooltip("最大スタミナ")] private float _maxSutamina;
+    [SerializeField, Tooltip("スタミナ回復量")] private float _staminaRegeneration;
     [SerializeField,Tooltip("移動速度")] private float _moveSpeed;
     [SerializeField, Tooltip("ジャンプの強さ")] private float _jumpForce;
     [SerializeField, Tooltip("受ける最大の高さ")] private float _maxHeight;
@@ -20,7 +21,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     [SerializeField,Tooltip("マジックシューター")] MagicShooter MagicShooter;
 
     private float _currentHp;
-    private float _currentMp;
+    [SerializeField] private float _currentStamina;
     private float _x, _z;
     private Vector3 _forward;
     private Vector3 _right;
@@ -29,6 +30,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     private Animator _animator;
     private Transform _tf;
     private float _startY;
+    private float _currentHeight;
+    private bool _isjumping = false;
+    private bool _isOutOfStamina = false;
 
     private float _xRot, _yRot;
     private float _clampYRot;
@@ -38,7 +42,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// プロパティ
     /// </summary>
     public float HP => _currentHp;
-    public float MoveSpeed => _moveSpeed;
+    public float Stamina => _currentStamina;
+    public float MaxHp => _maxHp;
+    public float MaxSutamina => _maxSutamina;
     public Quaternion PlayerRot => _playerRot;
 
     /// <summary>
@@ -52,7 +58,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _startY = _tf.position.y;
         _playerRot = transform.localRotation;
         _currentHp = _maxHp;
-        _currentMp = _maxMp;
+        _currentStamina = _maxSutamina;
         MagicShooter.MagicUpdate();
     }
 
@@ -65,6 +71,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         FPSCameraMove();
         MagicShooter.SetMagic();
         Jump();
+        StaminaController();
         if (Input.GetMouseButtonDown(0))
         {
             _animator.Play("Attack", 0);
@@ -136,19 +143,54 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         transform.localRotation = _playerRot;
     }
 
+    /// <summary>
+    /// ジャンプメソット
+    /// </summary>
     public void Jump()
     {
-        float currentHeight = _tf.position.y;
-        if(Input.GetKey(KeyCode.Space) && currentHeight < _startY + _maxHeight )
+        _currentHeight = _tf.position.y;
+        if(Input.GetKey(KeyCode.Space) && _currentHeight < _startY + _maxHeight  && !_isOutOfStamina)
         {
+            _isjumping = true;
             _rb.AddForce(Vector3.up * _jumpForce, ForceMode.Acceleration);
+            return;
         }
-        else if(currentHeight >= _startY + _maxHeight)
+        else if(_currentHeight >= _startY + _maxHeight)
         {
             if(_rb.linearVelocity.y > 0f)
             {
                 _rb.linearVelocity = new Vector3(_rb.linearVelocity.x, 0, _rb.linearVelocity.z);
             }
+            return;
         }
+        _isjumping = false;
+    }
+
+    private void StaminaController()
+    {
+        if(_isjumping)
+        {
+            _currentStamina -= _staminaRegeneration * Time.deltaTime;
+            if(_currentStamina < 0f)
+            {
+                _currentStamina = 0f;
+                StartCoroutine(OutOfStamina());
+            }
+        }
+        else if(!_isjumping  && _currentStamina != _maxSutamina)
+        {
+            _currentStamina += _staminaRegeneration * Time.deltaTime / 2;
+            if(_currentStamina >= _maxSutamina)
+            {
+                _currentStamina = _maxSutamina;
+            }
+        }
+    }
+
+    private IEnumerator OutOfStamina()
+    {
+        _isOutOfStamina = true;
+        yield return new WaitForSeconds(3);
+        _isOutOfStamina = false;
     }
 }

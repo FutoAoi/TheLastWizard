@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
         var charactors = FindObjectsByType<MonoBehaviour>(
             FindObjectsInactive.Include,     
             FindObjectsSortMode.None         
