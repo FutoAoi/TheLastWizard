@@ -1,24 +1,27 @@
 using System.Collections;
 using UnityEngine;
-using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
     [Header("ステータス設定")]
-    [SerializeField,Tooltip("最大体力")] private float _maxHp;
-    [SerializeField,Tooltip("最大スタミナ")] private float _maxSutamina;
+    [SerializeField, Tooltip("最大体力")] private float _maxHp;
+    [SerializeField, Tooltip("最大スタミナ")] private float _maxSutamina;
     [SerializeField, Tooltip("スタミナ回復量")] private float _staminaRegeneration;
-    [SerializeField,Tooltip("移動速度")] private float _moveSpeed;
+    [SerializeField, Tooltip("移動速度")] private float _moveSpeed;
     [SerializeField, Tooltip("ジャンプの強さ")] private float _jumpForce;
     [SerializeField, Tooltip("受ける最大の高さ")] private float _maxHeight;
 
     [Header("カメラ設定")]
-    [SerializeField,Tooltip("FPSカメラ")] private GameObject _mainCamera;
-    [SerializeField,Tooltip("カメラ感度")] public float _xSensitivity, _ySensitivity;
-    [SerializeField,Tooltip("最大のカメラ傾き")] private float _maxCameraAngle;
+    [SerializeField, Tooltip("FPSカメラ")] private GameObject _mainCamera;
+    [SerializeField, Tooltip("カメラ感度")] public float _xSensitivity, _ySensitivity;
+    [SerializeField, Tooltip("最大のカメラ傾き")] private float _maxCameraAngle;
 
     [Header("コンポーネント設定")]
-    [SerializeField,Tooltip("マジックシューター")] MagicShooter MagicShooter;
+    [SerializeField, Tooltip("マジックシューター")] MagicShooter MagicShooter;
+
+    [Header("行動範囲設定")]
+    [SerializeField, Tooltip("行動範囲X軸")] private float _MaxPlayerAreaX;
+    [SerializeField, Tooltip("行動範囲Z軸")] private float _MaxPlayerAreaZ;
 
     private float _currentHp;
     [SerializeField] private float _currentStamina;
@@ -26,6 +29,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     private Vector3 _forward;
     private Vector3 _right;
     private Vector3 _moveDirection;
+    private Vector3 _currentPlayerPosition;
     private Rigidbody _rb;
     private Animator _animator;
     private Transform _tf;
@@ -71,6 +75,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         FPSCameraMove();
         MagicShooter.SetMagic();
         Jump();
+        LimitArea();
         StaminaController();
         if (Input.GetMouseButtonDown(0))
         {
@@ -105,8 +110,8 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// </summary>
     private void Move()
     {
-        _x = Input.GetAxis("Horizontal") * _moveSpeed;
-        _z = Input.GetAxis("Vertical") * _moveSpeed;
+        _x = Input.GetAxisRaw("Horizontal") * _moveSpeed;
+        _z = Input.GetAxisRaw("Vertical") * _moveSpeed;
 
         if (Mathf.Abs(_x) < 0.1f) _x = 0f;
         if (Mathf.Abs(_z) < 0.1f) _z = 0f;
@@ -184,6 +189,27 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
             {
                 _currentStamina = _maxSutamina;
             }
+        }
+    }
+
+    void LimitArea()
+    {
+        _currentPlayerPosition = _tf.transform.position;
+        if(_currentPlayerPosition.x > _MaxPlayerAreaX)
+        {
+            _tf.position = new Vector3(_MaxPlayerAreaX, _currentPlayerPosition.y, _currentPlayerPosition.z);
+        }
+        if(_currentPlayerPosition.x < -_MaxPlayerAreaX)
+        {
+            _tf.position = new Vector3(-_MaxPlayerAreaX, _currentPlayerPosition.y, _currentPlayerPosition.z);
+        }
+        if(_currentPlayerPosition.z > _MaxPlayerAreaZ)
+        {
+            _tf.position = new Vector3(_currentPlayerPosition.x, _currentPlayerPosition.y, _MaxPlayerAreaZ);
+        }
+        if (_currentPlayerPosition.z < -_MaxPlayerAreaZ)
+        {
+            _tf.position = new Vector3(_currentPlayerPosition.x, _currentPlayerPosition.y, -_MaxPlayerAreaZ);
         }
     }
 

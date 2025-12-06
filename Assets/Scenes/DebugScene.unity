@@ -288,7 +288,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 61716b1e050bc62408c32c335c64a2b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _enemy: {fileID: 4461594982819130918, guid: 4c8e77a936effbf489ba8898cbf14dd7, type: 3}
   _spawnPoint:
   - {fileID: 371014551}
   _spawnTime: 10
@@ -906,7 +905,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _maxHp: 10
-  _maxMp: 10
+  _maxSutamina: 0
+  _staminaRegeneration: 0
   _moveSpeed: 5
   _jumpForce: 0
   _maxHeight: 0
@@ -915,6 +915,7 @@ MonoBehaviour:
   _ySensitivity: 0.3
   _maxCameraAngle: 80
   MagicShooter: {fileID: 489328065}
+  _currentStamina: 0
 --- !u!136 &489328060
 CapsuleCollider:
   m_ObjectHideFlags: 0

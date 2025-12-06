@@ -5,7 +5,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
-    private List<ICharactor> _charactorList = new List<ICharactor>();
+    private List<ICharactor> _characterList = new List<ICharactor>();
 
     void Awake()
     {
@@ -23,15 +23,15 @@ public class GameManager : MonoBehaviour
         ).OfType<ICharactor>();
         foreach (var charactor in charactors)
         {
-            _charactorList.Add(charactor);
+            _characterList.Add(charactor);
             charactor.SetupCharactor();
         }
     }
 
     void Update()
     {
-        _charactorList.RemoveAll(c => c == null);
-        foreach(ICharactor charactor in _charactorList)
+        _characterList.RemoveAll(c => c == null);
+        foreach(ICharactor charactor in _characterList)
         {
             charactor.UpdateCharactor();
         }
@@ -39,6 +39,6 @@ public class GameManager : MonoBehaviour
 
     public void AddIcharactorList(ICharactor charactor)
     {
-        _charactorList.Add(charactor);
+        _characterList.Add(charactor);
     }
 }
