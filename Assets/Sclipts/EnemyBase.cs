@@ -21,12 +21,8 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     private GameObject _player;
     private bool _isWalking = false;
     private Action _onDisable;
-    private StateMachine<EnemyBase> _stateMachine;
+    private bool _isDead = false;
 
-    private readonly IState<EnemyBase> IdleState = new Idle();
-    private readonly IState<EnemyBase> AttackState = new Attacks();
-    private readonly IState<EnemyBase> CoreMoveState = new CoreMove();
-    private readonly IState<EnemyBase> PurseState = new Pursue();
     public float HP => _hp;
 
     void Awake()
@@ -36,14 +32,20 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
             GameManager.instance.AddIcharactorList(this);
         }
         _animator = GetComponent<Animator>();
-        _defaultTarget = GameObject.Find("coa");
+        _defaultTarget = FindAnyObjectByType<CoreController>().gameObject;
         _currentTarget = _defaultTarget;
         _player = GameObject.FindWithTag("Player");
+    }
+
+    void Start()
+    {
+        GameManager.instance.PhaseChange_Break += Die;
     }
 
     public void Initialized(Action onDisable)
     {
         _onDisable = onDisable;
+        _isDead = false;
     }
 
     public void SetupCharactor()
@@ -90,6 +92,8 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
     
     public void Die()
     {
+        if(_isDead) return;
+        _isDead = true;
         _onDisable?.Invoke();
     }
 
@@ -111,78 +115,4 @@ public class EnemyBase : MonoBehaviour,IDamageable,ICharactor
 
         _hitCheckerObject.SetActive(false);
     }
-
-    #region State
-    public class Idle : IState<EnemyBase>
-    {
-        public void OnEnter(EnemyBase owner, IState<EnemyBase> prevState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnExit(EnemyBase owner, IState<EnemyBase> nextState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnUpdate(EnemyBase owner)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class Attacks : IState<EnemyBase>
-    {
-        public void OnEnter(EnemyBase owner, IState<EnemyBase> prevState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnExit(EnemyBase owner, IState<EnemyBase> nextState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnUpdate(EnemyBase owner)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class CoreMove : IState<EnemyBase>
-    {
-        public void OnEnter(EnemyBase owner, IState<EnemyBase> prevState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnExit(EnemyBase owner, IState<EnemyBase> nextState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnUpdate(EnemyBase owner)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class Pursue : IState<EnemyBase>
-    {
-        public void OnEnter(EnemyBase owner, IState<EnemyBase> prevState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnExit(EnemyBase owner, IState<EnemyBase> nextState = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void OnUpdate(EnemyBase owner)
-        {
-            throw new NotImplementedException();
-        }
-    }
-    #endregion
 }

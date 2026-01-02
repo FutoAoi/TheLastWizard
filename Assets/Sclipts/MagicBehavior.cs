@@ -3,12 +3,11 @@ using UnityEngine;
 
 public class MagicBehavior : MonoBehaviour
 {
-    int _attackPower = 0;
+    float _attackPower = 0;
 
     [SerializeField] float _speed;
     [SerializeField] float _destroyTimer;
     [SerializeField] float _radius;
-    [SerializeField] GameObject _hitParticle;
     Transform _tf;
 
     private Action _onDisable;
@@ -54,7 +53,7 @@ public class MagicBehavior : MonoBehaviour
         }
     }
 
-    public void AddStatus(int power, int range, int speed)
+    public void AddStatus(float power, float range, float speed)
     {
         _attackPower = power;
         _destroyTimer = range;

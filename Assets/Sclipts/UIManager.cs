@@ -1,10 +1,15 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private Image _hpGauge;
+    [SerializeField] private TMP_Text _maxHpText;
+    [SerializeField] private TMP_Text _currentHpText;
     [SerializeField] private Image _staminaGauge;
+    [SerializeField] private TMP_Text _maxStaminaText;
+    [SerializeField] private TMP_Text _currentStaminaText;
 
     private float _hp;
     private float _stamina;
@@ -32,5 +37,11 @@ public class UIManager : MonoBehaviour
             _stamina = _playerController.Stamina;
             _staminaGauge.fillAmount = _stamina / _maxStamina;
         }
+    }
+
+    public void MaxUpdate(float hp, float stamina)
+    {
+        _maxHp = hp;
+        _maxStamina = stamina;
     }
 }

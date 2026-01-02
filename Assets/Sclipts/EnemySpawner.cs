@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -9,14 +10,24 @@ public class EnemySpawner : MonoBehaviour
 
    @private float _timer;
 
-    private void Update()
+    public void EnemySpawn()
     {
         _timer += Time.deltaTime;
         if(_timer > _spawnTime)
         {
             int a = Random.Range(0, _spawnPoint.Length);
             EnemyBase enemy = EnemyObjectPool.Instance.GetEnemy(EnemyType.Nomal);
-            enemy.transform.position = _spawnPoint[a].position;
+
+            NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
+
+            if (agent != null)
+            {
+                agent.Warp(_spawnPoint[a].position);
+            }
+            else
+            {
+                enemy.transform.position = _spawnPoint[a].position;
+            }
             _timer = 0;
         }
     }

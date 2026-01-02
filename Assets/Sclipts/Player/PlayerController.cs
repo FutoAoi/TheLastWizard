@@ -17,7 +17,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     [SerializeField, Tooltip("最大のカメラ傾き")] private float _maxCameraAngle;
 
     [Header("コンポーネント設定")]
-    [SerializeField, Tooltip("マジックシューター")] MagicShooter MagicShooter;
+    [SerializeField, Tooltip("マジックシューター")] PlayerAttackManager MagicShooter;
 
     [Header("行動範囲設定")]
     [SerializeField, Tooltip("行動範囲X軸")] private float _MaxPlayerAreaX;
@@ -63,7 +63,6 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _playerRot = transform.localRotation;
         _currentHp = _maxHp;
         _currentStamina = _maxSutamina;
-        MagicShooter.MagicUpdate();
     }
 
     /// <summary>
@@ -80,6 +79,10 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         if (Input.GetMouseButtonDown(0))
         {
             _animator.Play("Attack", 0);
+        }
+        if(Input.GetMouseButtonDown(1))
+        {
+            _animator.Play("Melee", 0);
         }
     }
 

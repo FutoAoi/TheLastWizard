@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class CoreController : MonoBehaviour ,IDamageable
+public class CoreController : MonoBehaviour ,IDamageable ,IInteractable
 {
     [Header("コアのステータス設定")]
     [SerializeField,Tooltip("コアの最大Hp")] private float _coreHp;
@@ -14,6 +14,11 @@ public class CoreController : MonoBehaviour ,IDamageable
     public void Die()
     {
         SceneManager.LoadScene(1);
+    }
+
+    public string GetInteractText()
+    {
+        return "[F]ソウルを使って強化する";
     }
 
     /// <summary>
@@ -29,5 +34,10 @@ public class CoreController : MonoBehaviour ,IDamageable
             Die();
             _coreHp = 0;
         }
+    }
+
+    public void Interact(PlayerInteraction player)
+    {
+        throw new System.NotImplementedException();
     }
 }

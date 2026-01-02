@@ -3,39 +3,51 @@ using UnityEngine;
 [System.Serializable]
 public class MagicData
 {
-    [SerializeField] private string _magicID; // 魔法のID
-    [SerializeField] private MagicBehavior _magicPrefab; // 発射する魔法のPrefab
-    private int _attackPower; // 攻撃力
-    private int _range; // 射程
-    private int _cooldown; // クールダウン時間(秒)
-    private int _magicSpeed; // 速度
+    [HideInInspector] public float LastShootTime; // 最後に撃った時間
 
-    [HideInInspector] public float _lastShootTime; // 最後に撃った時間
+    [SerializeField] private MagicBehavior _magicPrefab;
+    [SerializeField] private MagicElement _magicElement;
+    [SerializeField] private MagicType _magicType;
+    [SerializeField] private int _currentAttackLevel = 1;
+    [SerializeField] private int _currentRangeLevel = 1;
+    [SerializeField] private int _currentCoolDownLevel = 1;
+    [SerializeField] private int _currentMagicSpeedLevel = 1;
 
-    public float LastShootTime => _lastShootTime;
+    private float _baseAttackPower = 1;
+    private float _baseRange = 5;
+    private float _baseCooldown = 3;
+    private float _baseMagicSpeed = 5;
+    private int _magicLevel = 1;
+
     public MagicBehavior MagicPrefab => _magicPrefab;
-    public string MagicID => _magicID;
-    public int AttackPower => _attackPower;
-    public int Range => _range;
-    public int Cooldown => _cooldown;
-    public int MagicSpeed => _magicSpeed;
+    public MagicElement MagicElement => _magicElement;
+    public MagicType MagicType => _magicType;
+    public float AttackPower => _baseAttackPower + (0.5f * _currentAttackLevel);
+    public float Range => _baseRange + (0.5f * _currentRangeLevel);
+    public float Cooldown => _baseCooldown - ( 0.2f * _currentCoolDownLevel);
+    public float MagicSpeed => _baseMagicSpeed + (0.5f * _currentMagicSpeedLevel);
+    public int CurrentAttackLevel => _currentAttackLevel;
+    public int CurrentRangeLevel => _currentRangeLevel;
+    public int CurrentCoolDownLevel => _currentCoolDownLevel;
+    public int CurrentMagicSpeedLevel => _currentMagicSpeedLevel;
+    public int MagicLevel => _magicLevel;
 
-
-    //MagicGenerator との同期関数
-    public void GenerateIDFromParameters()
+    public void LevelUp(LevelType type)
     {
-        var parameters = new MagicGenerator.MagicParameters(_attackPower, _range, _cooldown, _magicSpeed);
-        _magicID = MagicGenerator.GetID(parameters);
-    }
-    
-    //ID から値を復元
-    public void ApplyParametersFromID()
-    {
-        var parameters = MagicGenerator.GetMagicParameters(_magicID);
-        _attackPower = parameters.attackPower;
-        _range = parameters.range;
-        _cooldown = parameters.cooldown;
-        _magicSpeed = parameters.magicSpeed;
-        _lastShootTime = -parameters.cooldown;
+        switch(type)
+        {
+            case LevelType.AttackLevel:
+                _currentAttackLevel++;
+                break;
+            case LevelType.RangeLevel:
+                _currentCoolDownLevel++;
+                break;
+            case LevelType.CoolDownLevel:
+                _currentCoolDownLevel++;
+                break;
+            case LevelType.MagicSpeedLevel:
+                _currentMagicSpeedLevel++;
+                break;
+        }
     }
 }
