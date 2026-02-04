@@ -3,6 +3,7 @@ public enum MagicType
     Projectile,
     Beam,
     Area,
+    Build
 }
 
 public enum MagicElement

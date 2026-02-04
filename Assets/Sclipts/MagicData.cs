@@ -13,18 +13,18 @@ public class MagicData
     [SerializeField] private int _currentCoolDownLevel = 1;
     [SerializeField] private int _currentMagicSpeedLevel = 1;
 
-    private float _baseAttackPower = 1;
-    private float _baseRange = 5;
-    private float _baseCooldown = 3;
-    private float _baseMagicSpeed = 5;
-    private int _magicLevel = 1;
+    [SerializeField] private float _baseAttackPower = 1;
+    [SerializeField] private float _baseRange = 5;
+    [SerializeField] private float _baseCooldown = 2;
+    [SerializeField] private float _baseMagicSpeed = 5;
+    [SerializeField] private int _magicLevel = 1;
 
     public MagicBehavior MagicPrefab => _magicPrefab;
     public MagicElement MagicElement => _magicElement;
     public MagicType MagicType => _magicType;
     public float AttackPower => _baseAttackPower + (0.5f * _currentAttackLevel);
     public float Range => _baseRange + (0.5f * _currentRangeLevel);
-    public float Cooldown => _baseCooldown - ( 0.2f * _currentCoolDownLevel);
+    public float Cooldown => _baseCooldown - ( 0.19f * _currentCoolDownLevel);
     public float MagicSpeed => _baseMagicSpeed + (0.5f * _currentMagicSpeedLevel);
     public int CurrentAttackLevel => _currentAttackLevel;
     public int CurrentRangeLevel => _currentRangeLevel;

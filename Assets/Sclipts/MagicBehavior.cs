@@ -5,9 +5,13 @@ public class MagicBehavior : MonoBehaviour
 {
     float _attackPower = 0;
 
-    [SerializeField] float _speed;
-    [SerializeField] float _destroyTimer;
-    [SerializeField] float _radius;
+    [SerializeField] private float _speed;
+    [SerializeField] private float _destroyTimer;
+    [SerializeField] private float _radius;
+    [SerializeField] private GameObject _ice;
+    
+    private EffectObjectPool _pool;
+    private MagicType _magicType;
     Transform _tf;
 
     private Action _onDisable;
@@ -15,6 +19,7 @@ public class MagicBehavior : MonoBehaviour
     private void Start()
     {
         _tf = GetComponent<Transform>();
+        _pool = EffectObjectPool.Instance;
     }
 
     public void Initialize(Action onDisable)
@@ -33,13 +38,28 @@ public class MagicBehavior : MonoBehaviour
         {
             GameObject hitTarget = hit.collider.gameObject;
 
-            IDamageable target = hitTarget.GetComponent<IDamageable>();
-            if(target != null)
+            switch(_magicType)
             {
-                EffectBehavior effect = EffectObjectPool.Instance.GetEffect(EffectType.Hit);
-                effect.transform.position = _tf.position;
-                target.Hit(_attackPower);
+                case MagicType.Projectile:
+                    IDamageable target = hitTarget.GetComponent<IDamageable>();
+                    if (target != null)
+                    {
+                        if (target.Team == TeamType.Player) return;
+                        EffectBehavior effect = _pool.GetEffect(EffectType.Hit);
+                        effect.transform.position = _tf.position;
+                        target.Hit(_attackPower);
+                        DamagePopup.Create(_tf.position, _attackPower);
+                    }
+                    break;
+                case MagicType.Area:
+                    EffectBehavior thunder = _pool.GetEffect(EffectType.thunder);
+                    thunder.transform.position = _tf.position;
+                    break;
+                case MagicType.Build:
+                    Instantiate(_ice, _tf.position + (Vector3.up * 1.5f), Quaternion.identity);
+                    break;
             }
+            
             _onDisable?.Invoke();
             gameObject.SetActive(false);
         }
@@ -53,11 +73,12 @@ public class MagicBehavior : MonoBehaviour
         }
     }
 
-    public void AddStatus(float power, float range, float speed)
+    public void AddStatus(float power, float range, float speed, MagicType type)
     {
         _attackPower = power;
         _destroyTimer = range;
         _speed = speed;
+        _magicType = type;
     }
 
     private void OnDrawGizmos()

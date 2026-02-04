@@ -6,7 +6,10 @@ using UnityEngine.Pool;
 public enum EnemyType
 {
     None,
-    Nomal
+    Nomal,
+    Nomal2,
+    Nomal3,
+    Nomal4,
 }
 
 public class EnemyObjectPool : MonoBehaviour

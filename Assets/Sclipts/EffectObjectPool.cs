@@ -6,7 +6,8 @@ using UnityEngine.Pool;
 public enum EffectType
 {
     None,
-    Hit
+    Hit,
+    thunder
 }
 
 public class EffectObjectPool : MonoBehaviour

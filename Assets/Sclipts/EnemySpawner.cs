@@ -3,32 +3,55 @@ using UnityEngine.AI;
 
 public class EnemySpawner : MonoBehaviour
 {
-    [Header("スポーンさせる場所")]
-    [SerializeField] private Transform[] _spawnPoint;
-    [Header("スポーン間隔")]
-    [SerializeField] private float _spawnTime;
+    [SerializeField] private EnemySpawnPhase[] phases;
 
-   　private float _timer;
+    public int CurrentPhaseIndex;
+    private float _timer;
+
 
     public void EnemySpawn()
     {
+        if (phases.Length == 0) return;
+
+        EnemySpawnPhase phase = phases[CurrentPhaseIndex];
+
         _timer += Time.deltaTime;
-        if(_timer > _spawnTime)
+
+        if (_timer >= phase.spawnInterval)
         {
-            int a = Random.Range(0, _spawnPoint.Length);
-            EnemyBase enemy = EnemyObjectPool.Instance.GetEnemy(EnemyType.Nomal);
+            _timer = 0f;
+
+            int spawnIndex = Random.Range(0, phase.spawnPoints.Length);
+
+            int enemyIndex = Random.Range(0, phase.enemyTypes.Length);
+            EnemyType randomEnemyType = phase.enemyTypes[enemyIndex];
+
+            EnemyBase enemy =
+                EnemyObjectPool.Instance.GetEnemy(randomEnemyType);
 
             NavMeshAgent agent = enemy.GetComponent<NavMeshAgent>();
-
             if (agent != null)
             {
-                agent.Warp(_spawnPoint[a].position);
+                agent.Warp(phase.spawnPoints[spawnIndex].position);
             }
             else
             {
-                enemy.transform.position = _spawnPoint[a].position;
+                enemy.transform.position =
+                    phase.spawnPoints[spawnIndex].position;
             }
-            _timer = 0;
         }
     }
+}
+
+[System.Serializable]
+public class EnemySpawnPhase
+{
+    [Header("スポーンポイント")]
+    public Transform[] spawnPoints;
+
+    [Header("このフェーズで出る敵の種類（複数）")]
+    public EnemyType[] enemyTypes;
+
+    [Header("スポーン間隔")]
+    public float spawnInterval;
 }

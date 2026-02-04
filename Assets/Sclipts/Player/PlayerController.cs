@@ -1,8 +1,10 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour, ICharactor, IDamageable
 {
+
     [Header("ステータス設定")]
     [SerializeField, Tooltip("最大体力")] private float _maxHp;
     [SerializeField, Tooltip("最大スタミナ")] private float _maxSutamina;
@@ -10,6 +12,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     [SerializeField, Tooltip("移動速度")] private float _moveSpeed;
     [SerializeField, Tooltip("ジャンプの強さ")] private float _jumpForce;
     [SerializeField, Tooltip("受ける最大の高さ")] private float _maxHeight;
+    [SerializeField, Tooltip("陣営設定")] private TeamType _teamType = TeamType.Player;
 
     [Header("カメラ設定")]
     [SerializeField, Tooltip("FPSカメラ")] private GameObject _mainCamera;
@@ -17,11 +20,23 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     [SerializeField, Tooltip("最大のカメラ傾き")] private float _maxCameraAngle;
 
     [Header("コンポーネント設定")]
-    [SerializeField, Tooltip("マジックシューター")] PlayerAttackManager MagicShooter;
+    [SerializeField, Tooltip("マジックシューター")] PlayerAttackManager _attackManager;
+    [SerializeField] private GameObject _tutoPanel;
+    [SerializeField] private Slider _slider;
+    [SerializeField] private GameOverManager _gameOverManager;
 
     [Header("行動範囲設定")]
     [SerializeField, Tooltip("行動範囲X軸")] private float _MaxPlayerAreaX;
     [SerializeField, Tooltip("行動範囲Z軸")] private float _MaxPlayerAreaZ;
+
+    [Header("ダッシュ設定")]
+    [SerializeField, Tooltip("ダッシュ時の速度倍率")]
+    private float _dashSpeedMultiplier = 1.8f;
+
+    [SerializeField, Tooltip("ダッシュ時のスタミナ消費量（毎秒）")]
+    private float _dashStaminaCost = 20f;
+
+
 
     private float _currentHp;
     [SerializeField] private float _currentStamina;
@@ -37,10 +52,19 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     private float _currentHeight;
     private bool _isjumping = false;
     private bool _isOutOfStamina = false;
-
+    private bool _isInventry = false;
     private float _xRot, _yRot;
     private float _clampYRot;
     private Quaternion _playerRot;
+   [SerializeField] private UIManager _uiManager;
+
+    private const string _horizontal = "Horizontal";
+    private const string _vertical = "Vertical";
+
+    private bool _isDashing = false;
+    private bool _canDash = false;
+    private bool _isDie = false;
+
 
     /// <summary>
     /// プロパティ
@@ -50,6 +74,9 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     public float MaxHp => _maxHp;
     public float MaxSutamina => _maxSutamina;
     public Quaternion PlayerRot => _playerRot;
+    public TeamType Team => _teamType;
+    public PlayerAttackManager AttackManager => _attackManager;
+    public bool IsInventry => _isInventry;
 
     /// <summary>
     /// 初期セットアップ
@@ -63,6 +90,12 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _playerRot = transform.localRotation;
         _currentHp = _maxHp;
         _currentStamina = _maxSutamina;
+        int i = 0;
+        foreach(MagicSlotUI slot in _attackManager.MagicSlotUIs)
+        {
+            slot.SetIcon(_attackManager.Magics[i]);
+            i++;
+        }
     }
 
     /// <summary>
@@ -70,12 +103,18 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// </summary>
     public void UpdateCharactor()
     {
+        if(_isInventry) return;
+        if(_isDie) return;
         Move();
         FPSCameraMove();
-        MagicShooter.SetMagic();
         Jump();
+        Dash();
+        SetSens();
+        _attackManager.SetMagic();
+        _attackManager.UpdateMagicUI();
         LimitArea();
         StaminaController();
+
         if (Input.GetMouseButtonDown(0))
         {
             _animator.Play("Attack", 0);
@@ -84,6 +123,12 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         {
             _animator.Play("Melee", 0);
         }
+
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            _tutoPanel.SetActive(true);
+            GameManager.instance.Mause(false);
+        }
     }
 
     /// <summary>
@@ -91,7 +136,7 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// </summary>
     public void Die()
     {
-        Debug.Log("死んだで");
+        _gameOverManager.StartGameOver();
     }
 
     /// <summary>
@@ -100,10 +145,13 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// <param name="damage"></param>
     public void Hit(float damage)
     {
+        if (_isDie) return;
         _currentHp -= damage;
         if( _currentHp < 0 )
         {
             Die();
+            _currentHp = 0;
+            _isDie = true;
         }
         Debug.Log($"{damage}受けた！！");
     }
@@ -113,8 +161,8 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
     /// </summary>
     private void Move()
     {
-        _x = Input.GetAxisRaw("Horizontal") * _moveSpeed;
-        _z = Input.GetAxisRaw("Vertical") * _moveSpeed;
+        _x = Input.GetAxisRaw(_horizontal) * _moveSpeed;
+        _z = Input.GetAxisRaw(_vertical) * _moveSpeed;
 
         if (Mathf.Abs(_x) < 0.1f) _x = 0f;
         if (Mathf.Abs(_z) < 0.1f) _z = 0f;
@@ -127,7 +175,14 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _forward.Normalize();
         _right.Normalize();
 
-        _moveDirection = (_forward * _z + _right * _x).normalized * _moveSpeed;
+        float speed = _moveSpeed;
+
+        if (_isDashing)
+        {
+            speed *= _dashSpeedMultiplier;
+        }
+
+        _moveDirection = (_forward * _z + _right * _x).normalized * speed;
 
         _moveDirection.y = _rb.linearVelocity.y;
 
@@ -221,5 +276,63 @@ public class PlayerController : MonoBehaviour, ICharactor, IDamageable
         _isOutOfStamina = true;
         yield return new WaitForSeconds(3);
         _isOutOfStamina = false;
+    }
+
+    public void Inventry()
+    {
+        _isInventry = !_isInventry;
+        if(_rb != null)
+        {
+            _rb.linearVelocity = Vector3.zero;
+        }
+    }
+
+    private void Dash()
+    {
+        if (!_canDash) return;
+        if (Input.GetKey(KeyCode.LeftShift) && _currentStamina > 0f && _moveDirection.magnitude > 0.1f && !_isOutOfStamina)
+        {
+            _isDashing = true;
+
+            _currentStamina -= _dashStaminaCost * Time.deltaTime;
+
+            if (_currentStamina <= 0f)
+            {
+                _currentStamina = 0f;
+                StartCoroutine(OutOfStamina());
+                _isDashing = false;
+            }
+        }
+        else
+        {
+            _isDashing = false;
+        }
+    }
+
+    public void HpUp()
+    {
+        _maxHp += 10;
+        _currentHp = _maxHp;
+        _uiManager.MaxUpdate();
+    }
+
+    public void SutaminaUp()
+    {
+        _maxSutamina += 20;
+        _uiManager.MaxUpdate();
+    }
+
+    public void CanDash()
+    {
+        _canDash = true;
+    }
+
+    private void SetSens()
+    {
+        if(_xSensitivity != _slider.value)
+        {
+            _xSensitivity = _slider.value;
+            _ySensitivity = _slider.value;
+        }
     }
 }
